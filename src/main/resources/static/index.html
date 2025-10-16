@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quizzi App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="quiz-results.css">
+    <link rel="stylesheet" href="quiz-review.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1>Quizzi App</h1>
+        <div class="auth-buttons">
+            <button class="auth-button" id="loginBtn">Login</button>
+            <button class="auth-button" id="registerBtn">Register</button>
+        </div>
+    </header>
+
+    <!-- Login Modal -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2>Login</h2>
+            <form class="auth-form" id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Username</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="auth-switch">
+                Don't have an account? <a href="#" id="switchToRegister">Register</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2>Register</h2>
+            <form class="auth-form" id="registerForm">
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+            <div class="auth-switch">
+                Already have an account? <a href="#" id="switchToLogin">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <section class="panel">
+            <h2>Create Quiz</h2>
+            <div class="form-group">
+                <label for="quiz-title">Quiz Title</label>
+                <input id="quiz-title" type="text" placeholder="Enter your quiz title" />
+            </div>
+            <div id="questions-container"></div>
+            <div class="button-group">
+                <button id="add-question">
+                    <i class="fas fa-plus"></i> Add Question
+                </button>
+                <button id="create-quiz">
+                    <i class="fas fa-check"></i> Create Quiz
+                </button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Available Quizzes</h2>
+            <div id="quiz-list"></div>
+        </section>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

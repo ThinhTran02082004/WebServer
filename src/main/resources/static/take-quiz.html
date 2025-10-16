@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Take Quiz</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="cursor-styles.css">
+    <link rel="stylesheet" href="quiz-results.css">
+    <link rel="stylesheet" href="quiz-review-modal.css">
+    <link rel="stylesheet" href="success-screen.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 id="quiz-title">Quiz Title</h1>
+            <div class="quiz-info">
+                <div class="quiz-progress">
+                    <span id="current-question">Question 1</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <span id="total-questions">of 10</span>
+                </div>
+                <div class="active-users">
+                    <i class="fas fa-users"></i>
+                    <span id="active-users-count">1</span> people taking this quiz
+                </div>
+            </div>
+        </header>
+
+        <div class="quiz-container">
+            <div id="question-container" class="question-container">
+                <!-- Questions will be inserted here -->
+            </div>
+
+            <div class="quiz-navigation">
+                <button id="prev-button" class="nav-button">
+                    <i class="fas fa-arrow-left"></i> Previous
+                </button>
+                <button id="next-button" class="nav-button">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+                <button id="submit-quiz" class="submit-button" style="display: none;">
+                    Submit Quiz <i class="fas fa-check"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Modal -->
+        <div class="modal" id="results-modal">
+            <div class="modal-content">
+                <h2>Quiz Results</h2>
+                <div class="results-summary">
+                    <div class="score-circle">
+                        <div class="score-number">0</div>
+                        <div class="score-label">Score</div>
+                    </div>
+                    <div class="results-details">
+                        <div class="detail-item">
+                            <span class="label">Correct Answers:</span>
+                            <span id="correct-answers">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Total Questions:</span>
+                            <span id="total-answers">0</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Time Taken:</span>
+                            <span id="time-taken">0:00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="results-actions">
+                    <button class="btn-primary" onclick="showIncorrectAnswers()">
+                        <i class="fas fa-search"></i> View Incorrect Answers
+                    </button>
+                    <button class="retry-button" onclick="retryQuiz()">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                    <button class="back-button" onclick="goToQuizList()">
+                        <i class="fas fa-home"></i> Back to Quiz List
+                    </button>
+                </div>
+                <div id="incorrect-answers-review" class="incorrect-answers-review"></div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="js/quiz-review.js"></script>
+    <script src="take-quiz.js"></script>
+</body>
+</html>
