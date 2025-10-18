@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile - Quizzi App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Quizzi App</h1>
+            <nav class="nav-links">
+                <a href="index.html"><i class="fas fa-home"></i> Home</a>
+            </nav>
+        </header>
+
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="profile-info">
+                    <h2 id="username">Loading...</h2>
+                    <p id="email">Loading...</p>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-card">
+                    <i class="fas fa-check-circle"></i>
+                    <div class="stat-content">
+                        <h3>Completed Quizzes</h3>
+                        <p id="completed-quizzes">0</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-percentage"></i>
+                    <div class="stat-content">
+                        <h3>Average Score</h3>
+                        <p id="average-score">0%</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-star"></i>
+                    <div class="stat-content">
+                        <h3>Best Score</h3>
+                        <p id="best-score">0%</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quiz-history">
+                <h2>Quiz History</h2>
+                <div class="history-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                    <button class="filter-btn" data-filter="best">Best Scores</button>
+                </div>
+                <div id="quiz-history-list" class="quiz-history-list">
+                    <!-- Quiz history items will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="profile.js"></script>
+</body>
+</html>

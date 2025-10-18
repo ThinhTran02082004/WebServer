@@ -20,7 +20,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("*")
-                .withSockJS();
+                .setAllowedOrigins("http://localhost:8080")
+                .withSockJS()
+                .setStreamBytesLimit(512 * 1024)
+                .setHttpMessageCacheSize(1000)
+                .setDisconnectDelay(30 * 1000);
     }
 }

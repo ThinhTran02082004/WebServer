@@ -1,8 +1,27 @@
+// Global variables
 let currentQuiz = null;
 let currentQuestion = 0;
 let answers = [];
 let startTime = null;
 let stompClient = null;
+let currentUser = null;
+
+// Function to get current user
+function getCurrentUser() {
+    const userStr = localStorage.getItem('currentUser');
+    return userStr ? JSON.parse(userStr) : null;
+}
+
+// Function to initialize current user
+function initializeCurrentUser() {
+    currentUser = getCurrentUser();
+    if (!currentUser) {
+        alert('Please login to take the quiz');
+        window.location.href = '/';
+        return false;
+    }
+    return true;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
     // Get quiz ID from URL parameters
@@ -16,7 +35,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Check authentication
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!initializeCurrentUser()) {
+        return;
+    }
     if (!currentUser) {
         alert('Please login to take the quiz');
         window.location.href = '/';
@@ -196,19 +217,18 @@ async function submitQuiz() {
     });
 
     // Save result
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     try {
-        // Create question results
+        // Create question results with proper structure
         const questionResults = currentQuiz.questions.map((question, index) => ({
-            questionText: question.questionText,
-            options: question.options,
-            correctAnswerIndex: question.correctAnswerIndex,
-            userAnswerIndex: answers[index]
+            text: question.text || question.questionText,  // Handle both field names
+            correctAnswer: question.options[question.correctAnswerIndex],
+            userAnswer: question.options[answers[index]],
+            isCorrect: question.correctAnswerIndex === answers[index]
         }));
 
         const result = {
             userId: currentUser.id,
-            quizId: currentQuiz._id,
+            quizId: currentQuiz.id || currentQuiz._id,  // Handle both field names
             score: score,
             totalQuestions: currentQuiz.questions.length,
             timeTaken: timeTaken,
@@ -216,18 +236,28 @@ async function submitQuiz() {
             questionResults: questionResults
         };
 
+        console.log('Sending result:', JSON.stringify(result, null, 2));
+        
         const response = await fetch('/api/results', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(result)
         });
 
-        if (!response.ok) throw new Error('Failed to save results');
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Server response:', errorText);
+            throw new Error(errorText || 'Failed to save results');
+        }
+
+        const savedResult = await response.json();
+        console.log('Result saved successfully:', savedResult);
 
     } catch (error) {
         console.error('Error saving results:', error);
+        alert('There was an error saving your quiz results. Please try again or contact support.');
     }
 
     // Show results
@@ -292,6 +322,15 @@ function showResults(score, timeTaken) {
     // Remove the quiz container to prevent interaction
     document.querySelector('.container').style.display = 'none';
 
+    // Create and add modal container if it doesn't exist
+    let modal = document.getElementById('quiz-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'quiz-modal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+
     // Add container for incorrect answers
     const incorrectAnswersContainer = document.createElement('div');
     incorrectAnswersContainer.id = 'incorrect-answers-review';
@@ -307,6 +346,90 @@ function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function showIncorrectAnswers() {
+    const container = document.getElementById('incorrect-answers-review');
+    if (!container) return;
+
+    // Clear previous content
+    container.innerHTML = '';
+
+    // Get incorrect answers
+    const incorrectAnswers = currentQuiz.questions.map((question, index) => {
+        const userAnswer = answers[index];
+        const correctAnswer = question.correctAnswerIndex;
+        
+        if (userAnswer !== correctAnswer) {
+            return {
+                questionText: question.questionText,
+                userAnswer: question.options[userAnswer],
+                correctAnswer: question.options[correctAnswer],
+                options: question.options,
+                userAnswerIndex: userAnswer,
+                correctAnswerIndex: correctAnswer
+            };
+        }
+        return null;
+    }).filter(q => q !== null);
+
+    if (incorrectAnswers.length === 0) {
+        container.innerHTML = '<div class="perfect-score">Chúc mừng! Bạn đã trả lời đúng tất cả các câu hỏi!</div>';
+        container.style.display = 'block';
+        return;
+    }
+
+    // Create review content
+    container.innerHTML = `
+        <h2>Các câu trả lời sai</h2>
+        <div class="incorrect-answers-list">
+            ${incorrectAnswers.map((qa, index) => `
+                <div class="incorrect-answer-item">
+                    <div class="question-number">Câu ${index + 1}</div>
+                    <div class="question-text">${qa.questionText}</div>
+                    <div class="options-review">
+                        ${qa.options.map((option, optIndex) => `
+                            <div class="option-review ${
+                                optIndex === qa.correctAnswerIndex ? 'correct' : 
+                                optIndex === qa.userAnswerIndex ? 'incorrect' : ''
+                            }">
+                                ${option}
+                                ${optIndex === qa.correctAnswerIndex ? 
+                                    '<span class="icon"><i class="fas fa-check"></i></span>' : 
+                                    optIndex === qa.userAnswerIndex ? 
+                                    '<span class="icon"><i class="fas fa-times"></i></span>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="answer-explanation">
+                        <div class="user-answer">
+                            <span class="label">Câu trả lời của bạn:</span>
+                            <span class="answer incorrect">${qa.userAnswer}</span>
+                        </div>
+                        <div class="correct-answer">
+                            <span class="label">Đáp án đúng:</span>
+                            <span class="answer correct">${qa.correctAnswer}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="review-actions">
+            <button onclick="closeIncorrectAnswers()" class="btn-close">
+                <i class="fas fa-times"></i> Đóng
+            </button>
+        </div>
+    `;
+
+    // Show the container
+    container.style.display = 'block';
+}
+
+function closeIncorrectAnswers() {
+    const container = document.getElementById('incorrect-answers-review');
+    if (container) {
+        container.style.display = 'none';
+    }
 }
 
 function retryQuiz() {
@@ -381,13 +504,21 @@ function removeRemoteCursor(userId) {
 }
 
 function connectWebSocket(quizId) {
+    if (!currentUser) {
+        console.error('Cannot connect WebSocket: User not authenticated');
+        return;
+    }
+
     const socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
     stompClient.connect({}, function() {
         // Subscribe to active users updates
         stompClient.subscribe(`/topic/quiz/${quizId}/active-users`, function(message) {
             const activeCount = JSON.parse(message.body).activeUsers;
-            document.getElementById('active-users-count').textContent = activeCount;
+            const countElement = document.getElementById('active-users-count');
+            if (countElement) {
+                countElement.textContent = activeCount;
+            }
         });
 
         // Subscribe to cursor updates
@@ -397,7 +528,10 @@ function connectWebSocket(quizId) {
         });
 
         // Notify server that user joined
-        stompClient.send(`/app/quiz/${quizId}/join`, {}, JSON.stringify({}));
+        stompClient.send(`/app/quiz/${quizId}/join`, {}, JSON.stringify({
+            userId: currentUser.id,
+            username: currentUser.username
+        }));
 
         // Initialize cursor tracking
         initializeCursorTracking();

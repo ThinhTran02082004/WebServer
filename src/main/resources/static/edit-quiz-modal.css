@@ -1,0 +1,131 @@
+.edit-quiz-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.edit-quiz-modal-content {
+    position: relative;
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 800px;
+    border-radius: 5px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.edit-quiz-modal h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.edit-quiz-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.edit-quiz-form input[type="text"],
+.edit-quiz-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.question-list {
+    margin: 15px 0;
+}
+
+.question-item {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.question-item textarea {
+    min-height: 60px;
+}
+
+.options-list {
+    margin: 10px 0;
+}
+
+.option-item {
+    display: flex;
+    gap: 10px;
+    margin: 5px 0;
+    align-items: center;
+}
+
+.option-item input[type="radio"] {
+    margin-right: 5px;
+}
+
+.add-question-btn,
+.add-option-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+.remove-btn {
+    background-color: #f44336;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.action-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.close-btn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+}
+
+.close-btn:hover {
+    color: #000;
+}

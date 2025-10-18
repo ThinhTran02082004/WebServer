@@ -12,4 +12,5 @@ public class Quiz {
     private String id; // MongoDB sẽ tự tạo ID
     private String title;
     private List<Question> questions;
+    private String createdBy; // ID của người tạo quiz
 }

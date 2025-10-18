@@ -6,15 +6,36 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="quiz-results.css">
     <link rel="stylesheet" href="quiz-review.css">
+    <link rel="stylesheet" href="modal.css">
+    <link rel="stylesheet" href="quiz-list.css">
+    <link rel="stylesheet" href="edit-quiz-modal.css">
+    <link rel="stylesheet" href="quiz-admin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body>
 <div class="container">
     <header class="header">
-        <h1>Quizzi App</h1>
-        <div class="auth-buttons">
-            <button class="auth-button" id="loginBtn">Login</button>
-            <button class="auth-button" id="registerBtn">Register</button>
+        <div class="header-content">
+            <div class="logo">
+                <h1>Quizzi App</h1>
+            </div>
+            <div class="header-right">
+                <div class="auth-section">
+                    <div class="nav-buttons">
+                        <a href="index.html" class="auth-button active"><i class="fas fa-home"></i> Home</a>
+                    </div>
+                    <div class="auth-buttons">
+                        <button class="auth-button" id="loginBtn">Login</button>
+                        <button class="auth-button" id="registerBtn">Register</button>
+                    </div>
+                    <div class="user-info" style="display: none;">
+                        <button class="auth-button" id="profileBtn">Profile</button>
+                        <button class="auth-button" id="logoutBtn">Logout</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -67,7 +88,7 @@
     </div>
 
     <div class="main-content">
-        <section class="panel">
+        <section class="panel admin-only" style="display: none;">
             <h2>Create Quiz</h2>
             <div class="form-group">
                 <label for="quiz-title">Quiz Title</label>
@@ -84,13 +105,38 @@
             </div>
         </section>
 
-        <section class="panel">
-            <h2>Available Quizzes</h2>
-            <div id="quiz-list"></div>
+        <section class="quiz-section">
+            <h2 class="section-title">Available Quizzes</h2>
+            <div class="quiz-grid" id="quiz-list"></div>
         </section>
     </div>
 </div>
 
+<!-- Edit Quiz Modal -->
+<div class="edit-quiz-modal" id="editQuizModal">
+    <div class="edit-quiz-modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>Edit Quiz</h2>
+        <form class="edit-quiz-form" id="editQuizForm">
+            <div class="form-group">
+                <label for="edit-quiz-title">Quiz Title</label>
+                <input type="text" id="edit-quiz-title" required>
+            </div>
+            <div class="question-list" id="edit-questions-container"></div>
+            <div class="button-group">
+                <button type="button" class="add-question-btn" onclick="addQuestionToEdit()">
+                    <i class="fas fa-plus"></i> Add Question
+                </button>
+            </div>
+            <div class="action-buttons">
+                <button type="button" class="cancel-btn" onclick="closeEditQuizModal()">Cancel</button>
+                <button type="submit" class="save-btn">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="quiz-functions.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

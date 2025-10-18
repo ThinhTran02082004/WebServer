@@ -1,0 +1,147 @@
+.quiz-section {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.quiz-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.quiz-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.quiz-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.quiz-item:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-5px);
+}
+
+.quiz-item:hover::before {
+    opacity: 1;
+}
+
+.quiz-item h3 {
+    margin: 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.quiz-item p {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    flex-grow: 1;
+}
+
+.quiz-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-top: auto;
+}
+
+.quiz-item .start-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.quiz-item .start-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+.quiz-item .delete-btn {
+    padding: 0.75rem;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+}
+
+.quiz-item .delete-btn:hover {
+    background-color: var(--danger-hover);
+    transform: translateY(-2px);
+}
+
+.quiz-item button:active {
+    transform: translateY(1px);
+}
+
+@media (max-width: 768px) {
+    .quiz-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+
+    .quiz-item {
+        padding: 1rem;
+    }
+
+    .quiz-item h3 {
+        font-size: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+}

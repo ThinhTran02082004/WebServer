@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.mindrot.jbcrypt.BCrypt;
+import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,19 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    // Create default admin user on startup
+    @PostConstruct
+    public void init() {
+        if (!userRepository.existsByUsername("admin")) {
+            User admin = new User();
+            admin.setUsername("admin");
+            admin.setPassword(BCrypt.hashpw("123", BCrypt.gensalt()));
+            admin.setEmail("admin@quizzi.com");
+            admin.setRole("admin");
+            userRepository.save(admin);
+        }
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody User user) {
@@ -55,6 +69,7 @@ public class AuthController {
         response.put("id", user.getId());
         response.put("username", user.getUsername());
         response.put("email", user.getEmail());
+        response.put("role", user.getRole());
         
         return ResponseEntity.ok(response);
     }

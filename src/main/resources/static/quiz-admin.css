@@ -1,0 +1,28 @@
+.action-btn.edit-quiz {
+    background-color: #2196F3;
+    color: white;
+}
+
+.action-btn.edit-quiz:hover {
+    background-color: #1976D2;
+}
+
+.action-btn.delete-quiz {
+    background-color: #f44336;
+    color: white;
+}
+
+.action-btn.delete-quiz:hover {
+    background-color: #d32f2f;
+}
+
+.admin-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.quiz-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}

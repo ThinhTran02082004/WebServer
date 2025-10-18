@@ -5,12 +5,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auth elements
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
+    const profileBtn = document.getElementById('profileBtn');
     const loginModal = document.getElementById('loginModal');
     const registerModal = document.getElementById('registerModal');
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const switchToRegister = document.getElementById('switchToRegister');
     const switchToLogin = document.getElementById('switchToLogin');
+    
+    // Profile button click handler
+    if (profileBtn) {
+        profileBtn.addEventListener('click', () => {
+            window.location.href = '/profile.html';
+        });
+    }
+    
+    // Update auth display after elements are initialized
+    updateAuthDisplay();
     const closeButtons = document.querySelectorAll('.close-modal');
     // Modal handling
     function showModal(modal) {
@@ -24,11 +35,22 @@ document.addEventListener('DOMContentLoaded', () => {
     loginBtn.addEventListener('click', () => showModal(loginModal));
     registerBtn.addEventListener('click', () => showModal(registerModal));
     
+    // Close modal when clicking close button or outside modal
     closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            hideModal(loginModal);
-            hideModal(registerModal);
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const modal = button.closest('.modal');
+            if (modal) {
+                hideModal(modal);
+            }
         });
+    });
+
+    // Close modal when clicking outside
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            hideModal(e.target);
+        }
     });
 
     switchToRegister.addEventListener('click', (e) => {
@@ -44,6 +66,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Auth form handling
+    // Function to update auth display
+    function updateAuthDisplay() {
+        // Re-fetch elements to ensure they exist
+        const authButtons = document.querySelector('.auth-buttons');
+        const userInfo = document.querySelector('.user-info');
+        const usernameSpan = document.getElementById('username');
+
+        if (currentUser) {
+            // Hide auth buttons
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (registerBtn) registerBtn.style.display = 'none';
+            // Show user info
+            if (userInfo) userInfo.style.display = 'flex';
+            if (usernameSpan) usernameSpan.textContent = currentUser.username;
+        } else {
+            // Show auth buttons
+            if (loginBtn) loginBtn.style.display = 'inline-block';
+            if (registerBtn) registerBtn.style.display = 'inline-block';
+            // Hide user info
+            if (userInfo) userInfo.style.display = 'none';
+            if (usernameSpan) usernameSpan.textContent = '';
+        }
+    }
+
+    // Logout handler
+    const logoutBtn = document.getElementById('logoutBtn');
+    logoutBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to log out?')) {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            updateAuthDisplay();
+            location.reload();
+        }
+    });
+
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const username = document.getElementById('loginUsername').value;
@@ -106,21 +163,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function updateAuthDisplay() {
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const userInfo = document.querySelector('.user-info');
+        const adminActions = document.querySelectorAll('.admin-only');
+
         if (currentUser) {
-            loginBtn.style.display = 'none';
-            registerBtn.textContent = currentUser.username;
-            registerBtn.onclick = () => {
-                if (confirm('Do you want to log out?')) {
-                    localStorage.removeItem('currentUser');
-                    currentUser = null;
-                    updateAuthDisplay();
-                    location.reload();
-                }
-            };
+            // Hide login/register buttons and show logout
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (registerBtn) registerBtn.style.display = 'none';
+            if (userInfo) userInfo.style.display = 'flex';
+
+            // Show/hide admin actions based on role
+            if (adminActions && adminActions.length > 0) {
+                adminActions.forEach(action => {
+                    action.style.display = currentUser.role === 'admin' ? 'block' : 'none';
+                });
+            }
         } else {
-            loginBtn.style.display = 'block';
-            registerBtn.textContent = 'Register';
-            registerBtn.onclick = () => showModal(registerModal);
+            // Show login/register buttons and hide logout
+            if (loginBtn) loginBtn.style.display = 'inline-block';
+            if (registerBtn) registerBtn.style.display = 'inline-block';
+            if (userInfo) userInfo.style.display = 'none';
+            
+            // Hide all admin actions
+            if (adminActions && adminActions.length > 0) {
+                adminActions.forEach(action => action.style.display = 'none');
+            }
         }
     }
 
@@ -218,6 +287,197 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error:', error);
             alert('An unexpected error occurred. Please try again later.');
+        }
+    };
+
+    // Admin functions for managing quizzes
+    let editQuizModal = document.getElementById('editQuizModal');
+    let currentEditingQuiz = null;
+
+    function showEditQuizModal(quiz) {
+        currentEditingQuiz = quiz;
+        document.getElementById('edit-quiz-title').value = quiz.title;
+        
+        const questionsContainer = document.getElementById('edit-questions-container');
+        questionsContainer.innerHTML = '';
+        
+        quiz.questions.forEach((question, index) => {
+            const questionDiv = createQuestionEditElement(question, index);
+            questionsContainer.appendChild(questionDiv);
+        });
+        
+        editQuizModal.style.display = 'block';
+    }
+
+    function createQuestionEditElement(question, index) {
+        const div = document.createElement('div');
+        div.className = 'question-item';
+        div.innerHTML = `
+            <textarea class="question-text" required>${question.text}</textarea>
+            <div class="options-list">
+                ${question.options.map((option, optIndex) => `
+                    <div class="option-item">
+                        <input type="radio" name="correct-${index}" ${option === question.correctAnswer ? 'checked' : ''}>
+                        <input type="text" value="${option}" required>
+                        <button type="button" class="remove-btn" onclick="removeOption(this)">×</button>
+                    </div>
+                `).join('')}
+            </div>
+            <button type="button" class="add-option-btn" onclick="addOption(this)">Add Option</button>
+            <button type="button" class="remove-btn" onclick="removeQuestion(this)">Remove Question</button>
+        `;
+        return div;
+    }
+
+    window.closeEditQuizModal = function() {
+        editQuizModal.style.display = 'none';
+        currentEditingQuiz = null;
+    }
+
+    window.addQuestionToEdit = function() {
+        const container = document.getElementById('edit-questions-container');
+        const newQuestion = {
+            text: '',
+            options: ['', ''],
+            correctAnswer: ''
+        };
+        const questionDiv = createQuestionEditElement(newQuestion, container.children.length);
+        container.appendChild(questionDiv);
+    }
+
+    window.addOption = function(btn) {
+        const optionsList = btn.previousElementSibling;
+        const questionIndex = Array.from(btn.closest('.question-item').parentNode.children).indexOf(btn.closest('.question-item'));
+        const newOption = document.createElement('div');
+        newOption.className = 'option-item';
+        newOption.innerHTML = `
+            <input type="radio" name="correct-${questionIndex}">
+            <input type="text" value="" required>
+            <button type="button" class="remove-btn" onclick="removeOption(this)">×</button>
+        `;
+        optionsList.appendChild(newOption);
+    }
+
+    window.removeOption = function(btn) {
+        const optionItem = btn.closest('.option-item');
+        const optionsList = optionItem.parentNode;
+        if (optionsList.children.length > 2) {
+            optionItem.remove();
+        } else {
+            alert('Each question must have at least 2 options');
+        }
+    }
+
+    window.removeQuestion = function(btn) {
+        const questionItem = btn.closest('.question-item');
+        const container = questionItem.parentNode;
+        if (container.children.length > 1) {
+            questionItem.remove();
+        } else {
+            alert('Quiz must have at least one question');
+        }
+    }
+
+    document.getElementById('editQuizForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!currentUser || currentUser.role !== 'admin' || !currentEditingQuiz) return;
+
+        try {
+            const updatedQuiz = {
+                id: currentEditingQuiz.id,
+                title: document.getElementById('edit-quiz-title').value,
+                questions: Array.from(document.getElementById('edit-questions-container').children).map(questionDiv => {
+                    const options = Array.from(questionDiv.querySelectorAll('.option-item input[type="text"]'))
+                        .map(input => input.value.trim())
+                        .filter(option => option !== '');
+                    
+                    const correctAnswerIndex = Array.from(questionDiv.querySelectorAll('.option-item input[type="radio"]'))
+                        .findIndex(radio => radio.checked);
+                    
+                    return {
+                        text: questionDiv.querySelector('.question-text').value.trim(),
+                        options: options,
+                        correctAnswer: options[correctAnswerIndex] || options[0]
+                    };
+                })
+            };
+
+            const response = await fetch(`/api/quizzes/${currentEditingQuiz.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Role': currentUser.role
+                },
+                body: JSON.stringify(updatedQuiz)
+            });
+
+            if (!response.ok) throw new Error('Failed to update quiz');
+            
+            alert('Quiz updated successfully');
+            closeEditQuizModal();
+            loadQuizzes(); // Refresh quiz list
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to update quiz');
+        }
+    });
+
+    // Close modal when clicking outside
+    editQuizModal.addEventListener('click', function(e) {
+        if (e.target === editQuizModal) {
+            closeEditQuizModal();
+        }
+    });
+
+    // Close modal when clicking the close button
+    document.querySelector('#editQuizModal .close-btn').addEventListener('click', closeEditQuizModal);
+
+    window.editQuiz = async function(quizId) {
+        if (!currentUser || currentUser.role !== 'admin') {
+            alert('Only administrators can edit quizzes');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/quizzes/${quizId}`, {
+                headers: {
+                    'User-Role': currentUser.role
+                }
+            });
+            if (!response.ok) throw new Error('Failed to load quiz');
+            
+            const quiz = await response.json();
+            showEditQuizModal(quiz);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to load quiz for editing');
+        }
+    };
+
+    window.deleteQuiz = async function(quizId) {
+        if (!currentUser || currentUser.role !== 'admin') {
+            alert('Only administrators can delete quizzes');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/quizzes/${quizId}`, {
+                method: 'DELETE',
+                headers: {
+                    'User-Role': currentUser.role
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to delete quiz');
+            alert('Quiz deleted successfully');
+            loadQuizzes(); // Refresh quiz list
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to delete quiz');
         }
     };
 
@@ -417,13 +677,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addQuestionBtn.addEventListener('click', () => addQuestionField());
 
-    createQuizBtn.addEventListener('click', () => {
+    createQuizBtn.addEventListener('click', async () => {
         const title = quizTitleInput.value.trim();
         if (!title) return alert('Please provide a title');
         const questionBlocks = Array.from(document.querySelectorAll('.question-block'));
         
         if (!currentUser) {
             alert('Please login to create a quiz');
+            return;
+        }
+        
+        if (currentUser.role !== 'admin') {
+            alert('Only administrators can create quizzes');
             return;
         }
 
@@ -452,6 +717,32 @@ document.addEventListener('DOMContentLoaded', () => {
                     correctAnswerIndex: correctIndex
                 };
             });
+
+            // Add createdBy field
+            const quizData = {
+                title,
+                questions,
+                createdBy: currentUser.id
+            };
+
+            // Create the quiz
+            const response = await fetch('/api/quizzes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(quizData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create quiz');
+            }
+
+            // Clear form and reload quizzes
+            quizTitleInput.value = '';
+            questionsContainer.innerHTML = '';
+            questionCount = 0;
+            loadQuizzes(); // Reload the quiz list
 
             fetch('/api/quizzes', {
                 method: 'POST',
@@ -489,12 +780,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 quizzes.forEach(quiz => {
                     const quizElement = document.createElement('div');
                     quizElement.className = 'quiz-item';
-                    quizElement.innerHTML = `
-                        <h3>${quiz.title}</h3>
-                        <p>${(quiz.questions || []).length} questions</p>
-                        <button class="start-btn">Bắt đầu</button>
+                    
+                    // Tạo phần HTML cho quiz item với icon và thông tin chi tiết hơn
+                    let quizHTML = `
+                        <h3><i class="fas fa-book-open"></i> ${quiz.title}</h3>
+                        <p><i class="fas fa-tasks"></i> ${(quiz.questions || []).length} câu hỏi</p>
+                        <div class="quiz-actions">
+                            <button class="start-btn">
+                                <i class="fas fa-play"></i> Bắt đầu
+                            </button>
                     `;
+                    
+                    // Thêm nút xóa nếu người dùng là admin
+                    if (currentUser && currentUser.role === 'admin') {
+                        quizHTML += `
+                            <button class="delete-btn" title="Delete Quiz">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        `;
+                    }
+                    
+                    quizHTML += `</div>`;
+                    quizElement.innerHTML = quizHTML;
+                    
+                    // Thêm event listener cho nút bắt đầu
                     quizElement.querySelector('.start-btn').addEventListener('click', () => startQuiz(quiz.id));
+                    
+                    // Thêm event listener cho nút xóa nếu nó tồn tại
+                    const deleteBtn = quizElement.querySelector('.delete-btn');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', () => deleteQuiz(quiz.id));
+                    }
+                    
                     quizList.appendChild(quizElement);
                 });
             })

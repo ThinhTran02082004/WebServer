@@ -11,6 +11,7 @@ public class QuizResult {
     private String dateCompleted;
     private int timeTaken;
     private List<QuestionResult> questionResults;
+    private String quizTitle; // Lưu tên quiz để hiển thị khi quiz bị xóa
 
     public QuizResult() {}
 
@@ -85,5 +86,13 @@ public class QuizResult {
 
     public void setQuestionResults(List<QuestionResult> questionResults) {
         this.questionResults = questionResults;
+    }
+
+    public String getQuizTitle() {
+        return quizTitle;
+    }
+
+    public void setQuizTitle(String quizTitle) {
+        this.quizTitle = quizTitle;
     }
 }

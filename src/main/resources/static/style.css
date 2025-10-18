@@ -40,6 +40,33 @@ input[type="text"]:focus,
     cursor: text;
 }
 
+/* User info styles */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-info .profile-link {
+    font-weight: 500;
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-info .profile-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+.user-info .profile-link::before {
+    content: '\f007';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+}
+
 /* Thêm hiệu ứng ripple khi click */
 .add-option-btn, 
 .remove-q, 
@@ -261,34 +288,83 @@ body {
 }
 
 .header {
-    background: #4a90e2;
-    color: white;
-    padding: 20px;
-    text-align: center;
-    border-radius: 12px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.header {
     background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
     color: white;
-    padding: 3rem 2rem;
+    padding: 1.5rem 2rem;
     border-radius: 24px;
     margin-bottom: 3rem;
-    text-align: center;
     box-shadow: var(--shadow-lg);
     position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+    animation: rotate 20s linear infinite;
+    pointer-events: none;
+}
+
+.header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
-.auth-buttons {
-    position: absolute;
-    right: 2rem;
+.logo h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-right {
     display: flex;
+    align-items: center;
     gap: 1rem;
+}
+
+.auth-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-buttons,
+.auth-buttons,
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.auth-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-button:hover,
+.auth-button.active {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
 }
 
 .auth-button {
@@ -297,6 +373,33 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.auth-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Removed create-quiz-btn styles */
+
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.auth-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    height: 42px;
+    display: flex;
+    align-items: center;
     font-weight: 600;
     transition: all 0.3s ease;
 }
@@ -432,8 +535,6 @@ body {
 
 .auth-switch a:hover {
     text-decoration: underline;
-}
-    overflow: hidden;
 }
 
 .header::before {
