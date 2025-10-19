@@ -1,5 +1,6 @@
 package com.quizzi.server.model;
 
+import java.util.Date;
 import java.util.List;
 
 public class QuizResult {
@@ -8,14 +9,14 @@ public class QuizResult {
     private String quizId;
     private int score;
     private int totalQuestions;
-    private String dateCompleted;
+    private Date dateCompleted;
     private int timeTaken;
     private List<QuestionResult> questionResults;
     private String quizTitle; // Lưu tên quiz để hiển thị khi quiz bị xóa
 
     public QuizResult() {}
 
-    public QuizResult(String userId, String quizId, int score, int totalQuestions, String dateCompleted) {
+    public QuizResult(String userId, String quizId, int score, int totalQuestions, Date dateCompleted) {
         this.userId = userId;
         this.quizId = quizId;
         this.score = score;
@@ -64,11 +65,11 @@ public class QuizResult {
         this.totalQuestions = totalQuestions;
     }
 
-    public String getDateCompleted() {
+    public Date getDateCompleted() {
         return dateCompleted;
     }
 
-    public void setDateCompleted(String dateCompleted) {
+    public void setDateCompleted(Date dateCompleted) {
         this.dateCompleted = dateCompleted;
     }
 

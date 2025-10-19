@@ -40,6 +40,46 @@ input[type="text"]:focus,
     cursor: text;
 }
 
+/* Review mode styles */
+.review-mode .option-item {
+    pointer-events: none;
+    cursor: default;
+}
+
+.review-mode .option-item.correct {
+    background-color: #d1fae5;
+    border-color: #10b981;
+    color: #065f46;
+}
+
+.review-mode .option-item.incorrect {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+
+.review-mode .option-item.user-selected {
+    font-weight: 600;
+}
+
+.review-mode .option-item.correct .answer-icon.correct,
+.review-mode .option-item.incorrect .answer-icon.incorrect {
+    display: inline-block;
+}
+
+.review-mode .option-item .answer-icon {
+    display: none;
+}
+
+.review-mode #submit-quiz {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.review-mode #submit-quiz:hover {
+    background-color: var(--primary-hover);
+}
+
 /* User info styles */
 .user-info {
     display: flex;

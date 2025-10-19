@@ -34,7 +34,7 @@ async function loadQuizHistory(filter = 'all') {
             return;
         }
 
-        const response = await fetch(`/api/results/user/${currentUser.id}`);
+        const response = await fetch(`/api/results/user/${currentUser.id}?page=0&size=100`);
         if (!response.ok) {
             throw new Error('Failed to load quiz history');
         }
@@ -130,7 +130,9 @@ async function loadQuizHistory(filter = 'all') {
 
         historyContainer.innerHTML = filteredResults.map(result => {
             const scorePercentage = ((result.score / result.totalQuestions) * 100).toFixed(1);
-            const completionDate = new Date(result.dateCompleted).toLocaleDateString();
+            const completionDate = result.dateCompleted ? 
+                new Date(result.dateCompleted).toLocaleDateString() : 
+                'Unknown date';
             
             return `
                 <div class="quiz-history-item${result.quizDeleted ? ' quiz-deleted' : ''}">
@@ -146,13 +148,7 @@ async function loadQuizHistory(filter = 'all') {
                         <div class="quiz-deleted-notice">
                             <i class="fas fa-exclamation-circle"></i> Quiz no longer available
                         </div>
-                    ` : `
-                        <div class="quiz-actions">
-                            <a href="quiz.html?id=${result.quizId}" class="review-btn">
-                                <i class="fas fa-eye"></i> Review
-                            </a>
-                        </div>
-                    `}
+                    ` : ''}
                 </div>
             `;
         }).join('');
