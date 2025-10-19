@@ -20,13 +20,18 @@ public class AuthController {
     // Create default admin user on startup
     @PostConstruct
     public void init() {
-        if (!userRepository.existsByUsername("admin")) {
-            User admin = new User();
-            admin.setUsername("admin");
-            admin.setPassword(BCrypt.hashpw("123", BCrypt.gensalt()));
-            admin.setEmail("admin@quizzi.com");
-            admin.setRole("admin");
-            userRepository.save(admin);
+        try {
+            if (!userRepository.existsByUsername("admin")) {
+                User admin = new User();
+                admin.setUsername("admin");
+                admin.setPassword(BCrypt.hashpw("123", BCrypt.gensalt()));
+                admin.setEmail("admin@quizzi.com");
+                admin.setRole("admin");
+                userRepository.save(admin);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to initialize admin user: " + e.getMessage());
+            // Don't throw exception to prevent startup failure
         }
     }
 
@@ -57,20 +62,29 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> credentials) {
-        String username = credentials.get("username");
-        String password = credentials.get("password");
+        try {
+            String username = credentials.get("username");
+            String password = credentials.get("password");
 
-        User user = userRepository.findByUsername(username);
-        if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
-            return ResponseEntity.badRequest().body("Invalid username or password");
+            if (username == null || password == null) {
+                return ResponseEntity.badRequest().body("Username and password are required");
+            }
+
+            User user = userRepository.findByUsername(username);
+            if (user == null || !BCrypt.checkpw(password, user.getPassword())) {
+                return ResponseEntity.badRequest().body("Invalid username or password");
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", user.getId());
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("role", user.getRole());
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("Login error: " + e.getMessage());
+            return ResponseEntity.status(500).body("Internal server error during login");
         }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", user.getId());
-        response.put("username", user.getUsername());
-        response.put("email", user.getEmail());
-        response.put("role", user.getRole());
-        
-        return ResponseEntity.ok(response);
     }
 }
