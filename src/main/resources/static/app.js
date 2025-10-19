@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const registerBtn = document.getElementById('registerBtn');
         const userInfo = document.querySelector('.user-info');
         const adminActions = document.querySelectorAll('.admin-only');
+        const quizSection = document.querySelector('.quiz-section');
 
         if (currentUser) {
             // Hide login/register buttons and show logout
@@ -180,6 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     action.style.display = currentUser.role === 'admin' ? 'block' : 'none';
                 });
             }
+
+            // Thêm class user-mode cho quiz-section khi không phải Admin
+            if (quizSection) {
+                if (currentUser.role !== 'admin') {
+                    quizSection.classList.add('user-mode');
+                } else {
+                    quizSection.classList.remove('user-mode');
+                }
+            }
         } else {
             // Show login/register buttons and hide logout
             if (loginBtn) loginBtn.style.display = 'inline-block';
@@ -189,6 +199,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Hide all admin actions
             if (adminActions && adminActions.length > 0) {
                 adminActions.forEach(action => action.style.display = 'none');
+            }
+
+            // Thêm class user-mode khi chưa đăng nhập (giống User)
+            if (quizSection) {
+                quizSection.classList.add('user-mode');
             }
         }
     }

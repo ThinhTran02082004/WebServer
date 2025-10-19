@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Get quiz ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const quizId = urlParams.get('id');
+    const isReviewMode = urlParams.get('review') === 'true';
+    const resultId = urlParams.get('resultId');
     
     if (!quizId) {
         alert('No quiz specified');
@@ -54,15 +56,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Initialize quiz
         initializeQuiz();
+        
+        // If in review mode, load previous answers
+        if (isReviewMode && resultId) {
+            await loadReviewData(resultId);
+        }
+        
         showQuestion(0);
 
-        // Connect to WebSocket
-        connectWebSocket(quizId);
+        // Connect to WebSocket only if not in review mode
+        if (!isReviewMode) {
+            connectWebSocket(quizId);
+        }
     } catch (error) {
         console.error('Error loading quiz:', error);
         alert('Could not load the quiz. Please try again or contact support.');
     }
 });
+
+async function loadReviewData(resultId) {
+    try {
+        const response = await fetch(`/api/results/${resultId}`);
+        if (!response.ok) throw new Error('Failed to load review data');
+        
+        const result = await response.json();
+        
+        // Set answers from the previous result
+        if (result.questionResults) {
+            answers = result.questionResults.map(qResult => {
+                // Find the index of the user's answer in the options
+                const userAnswerIndex = qResult.options.findIndex(option => option === qResult.userAnswer);
+                return userAnswerIndex >= 0 ? userAnswerIndex : null;
+            });
+        }
+        
+        // Mark quiz as submitted for review mode
+        document.body.classList.add('review-mode');
+        
+    } catch (error) {
+        console.error('Error loading review data:', error);
+        alert('Could not load review data. Please try again.');
+    }
+}
 
 function initializeQuiz() {
     document.getElementById('quiz-title').textContent = currentQuiz.title;
@@ -88,13 +123,23 @@ function initializeQuiz() {
         }
     });
 
-    submitButton.addEventListener('click', submitQuiz);
+    // Change submit button behavior based on mode
+    const isReviewMode = new URLSearchParams(window.location.search).get('review') === 'true';
+    if (isReviewMode) {
+        submitButton.textContent = 'Quay lại';
+        submitButton.addEventListener('click', () => {
+            window.location.href = 'profile.html';
+        });
+    } else {
+        submitButton.addEventListener('click', submitQuiz);
+    }
 }
 
 function showQuestion(index) {
     currentQuestion = index;
     const question = currentQuiz.questions[index];
     const isQuizSubmitted = document.querySelector('.result-summary') !== null;
+    const isReviewMode = document.body.classList.contains('review-mode');
     
     // Update progress
     document.getElementById('current-question').textContent = `Question ${index + 1}`;
@@ -119,7 +164,7 @@ function showQuestion(index) {
                     const isUserAnswer = answers[index] === optIndex;
                     const classes = [];
                     
-                    if (isQuizSubmitted) {
+                    if (isQuizSubmitted || isReviewMode) {
                         if (isCorrect) {
                             classes.push('correct');
                         } else if (isUserAnswer) {
@@ -145,19 +190,21 @@ function showQuestion(index) {
         </div>
     `;
 
-    // Add click handlers for options
-    container.querySelectorAll('.option-item').forEach(option => {
-        option.addEventListener('click', () => {
-            // Update selected answer
-            const optionIndex = parseInt(option.dataset.index);
-            answers[currentQuestion] = optionIndex;
-            
-            // Update UI
-            container.querySelectorAll('.option-item').forEach(opt => 
-                opt.classList.remove('selected'));
-            option.classList.add('selected');
+    // Add click handlers for options only if not in review mode
+    if (!isReviewMode) {
+        container.querySelectorAll('.option-item').forEach(option => {
+            option.addEventListener('click', () => {
+                // Update selected answer
+                const optionIndex = parseInt(option.dataset.index);
+                answers[currentQuestion] = optionIndex;
+                
+                // Update UI
+                container.querySelectorAll('.option-item').forEach(opt => 
+                    opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
         });
-    });
+    }
 }
 
 async function submitQuiz() {
@@ -216,6 +263,11 @@ async function submitQuiz() {
         option.style.pointerEvents = 'none';
     });
 
+    // Hide navigation buttons after submission
+    document.getElementById('prev-button').style.display = 'none';
+    document.getElementById('next-button').style.display = 'none';
+    document.getElementById('submit-quiz').style.display = 'none';
+
     // Save result
     try {
         // Create question results with proper structure
@@ -232,7 +284,7 @@ async function submitQuiz() {
             score: score,
             totalQuestions: currentQuiz.questions.length,
             timeTaken: timeTaken,
-            dateCompleted: new Date().toISOString(),
+            dateCompleted: new Date(),
             questionResults: questionResults
         };
 
@@ -321,25 +373,6 @@ function showResults(score, timeTaken) {
     
     // Remove the quiz container to prevent interaction
     document.querySelector('.container').style.display = 'none';
-
-    // Create and add modal container if it doesn't exist
-    let modal = document.getElementById('quiz-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'quiz-modal';
-        modal.className = 'modal';
-        document.body.appendChild(modal);
-    }
-
-    // Add container for incorrect answers
-    const incorrectAnswersContainer = document.createElement('div');
-    incorrectAnswersContainer.id = 'incorrect-answers-review';
-    incorrectAnswersContainer.className = 'incorrect-answers-review';
-    incorrectAnswersContainer.style.display = 'none';
-    modal.appendChild(incorrectAnswersContainer);
-
-    // Show modal
-    modal.classList.add('active');
 }
 
 function formatTime(seconds) {
@@ -349,12 +382,11 @@ function formatTime(seconds) {
 }
 
 function showIncorrectAnswers() {
-    const container = document.getElementById('incorrect-answers-review');
-    if (!container) return;
-
-    // Clear previous content
-    container.innerHTML = '';
-
+    // Create modal for incorrect answers
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'incorrect-answers-modal';
+    
     // Get incorrect answers
     const incorrectAnswers = currentQuiz.questions.map((question, index) => {
         const userAnswer = answers[index];
@@ -374,61 +406,78 @@ function showIncorrectAnswers() {
     }).filter(q => q !== null);
 
     if (incorrectAnswers.length === 0) {
-        container.innerHTML = '<div class="perfect-score">Chúc mừng! Bạn đã trả lời đúng tất cả các câu hỏi!</div>';
-        container.style.display = 'block';
-        return;
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="perfect-score">Chúc mừng! Bạn đã trả lời đúng tất cả các câu hỏi!</div>
+                <button onclick="closeIncorrectAnswers()" class="btn-close">
+                    <i class="fas fa-times"></i> Đóng
+                </button>
+            </div>
+        `;
+    } else {
+        // Create review content
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>Các câu trả lời sai</h2>
+                <div class="incorrect-answers-list">
+                    ${incorrectAnswers.map((qa, index) => `
+                        <div class="incorrect-answer-item">
+                            <div class="question-number">Câu ${index + 1}</div>
+                            <div class="question-text">${qa.questionText}</div>
+                            <div class="options-review">
+                                ${qa.options.map((option, optIndex) => `
+                                    <div class="option-review ${
+                                        optIndex === qa.correctAnswerIndex ? 'correct' : 
+                                        optIndex === qa.userAnswerIndex ? 'incorrect' : ''
+                                    }">
+                                        ${option}
+                                        ${optIndex === qa.correctAnswerIndex ? 
+                                            '<span class="icon"><i class="fas fa-check"></i></span>' : 
+                                            optIndex === qa.userAnswerIndex ? 
+                                            '<span class="icon"><i class="fas fa-times"></i></span>' : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="answer-explanation">
+                                <div class="user-answer">
+                                    <span class="label">Câu trả lời của bạn:</span>
+                                    <span class="answer incorrect">${qa.userAnswer}</span>
+                                </div>
+                                <div class="correct-answer">
+                                    <span class="label">Đáp án đúng:</span>
+                                    <span class="answer correct">${qa.correctAnswer}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="review-actions">
+                    <button onclick="closeIncorrectAnswers()" class="btn-close">
+                        <i class="fas fa-times"></i> Đóng
+                    </button>
+                </div>
+            </div>
+        `;
     }
 
-    // Create review content
-    container.innerHTML = `
-        <h2>Các câu trả lời sai</h2>
-        <div class="incorrect-answers-list">
-            ${incorrectAnswers.map((qa, index) => `
-                <div class="incorrect-answer-item">
-                    <div class="question-number">Câu ${index + 1}</div>
-                    <div class="question-text">${qa.questionText}</div>
-                    <div class="options-review">
-                        ${qa.options.map((option, optIndex) => `
-                            <div class="option-review ${
-                                optIndex === qa.correctAnswerIndex ? 'correct' : 
-                                optIndex === qa.userAnswerIndex ? 'incorrect' : ''
-                            }">
-                                ${option}
-                                ${optIndex === qa.correctAnswerIndex ? 
-                                    '<span class="icon"><i class="fas fa-check"></i></span>' : 
-                                    optIndex === qa.userAnswerIndex ? 
-                                    '<span class="icon"><i class="fas fa-times"></i></span>' : ''}
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="answer-explanation">
-                        <div class="user-answer">
-                            <span class="label">Câu trả lời của bạn:</span>
-                            <span class="answer incorrect">${qa.userAnswer}</span>
-                        </div>
-                        <div class="correct-answer">
-                            <span class="label">Đáp án đúng:</span>
-                            <span class="answer correct">${qa.correctAnswer}</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('')}
-        </div>
-        <div class="review-actions">
-            <button onclick="closeIncorrectAnswers()" class="btn-close">
-                <i class="fas fa-times"></i> Đóng
-            </button>
-        </div>
-    `;
-
-    // Show the container
-    container.style.display = 'block';
+    // Add modal to document
+    document.body.appendChild(modal);
+    
+    // Show modal
+    modal.classList.add('active');
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeIncorrectAnswers();
+        }
+    });
 }
 
 function closeIncorrectAnswers() {
-    const container = document.getElementById('incorrect-answers-review');
-    if (container) {
-        container.style.display = 'none';
+    const modal = document.getElementById('incorrect-answers-modal');
+    if (modal) {
+        modal.remove();
     }
 }
 
@@ -502,6 +551,7 @@ function removeRemoteCursor(userId) {
         delete cursors[userId];
     }
 }
+
 
 function connectWebSocket(quizId) {
     if (!currentUser) {
